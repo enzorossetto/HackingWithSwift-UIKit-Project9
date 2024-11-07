@@ -47,16 +47,21 @@ class ViewController: UITableViewController {
             guard let searchTerm = ac?.textFields?.first?.text?.lowercased() else { return }
             guard let petitions = self?.petitions else { return }
             
-            if self?.petitions != nil {
-                if searchTerm.isEmpty {
-                    self?.petitionsToDisplay = petitions
-                } else {
-                    self?.petitionsToDisplay = petitions.filter { petition in
-                        petition.title.lowercased().contains(searchTerm) || petition.body.lowercased().contains(searchTerm)
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                if self?.petitions != nil {
+                    if searchTerm.isEmpty {
+                        self?.petitionsToDisplay = petitions
+                    } else {
+                        self?.petitionsToDisplay = petitions.filter { petition in
+                            petition.title.lowercased().contains(searchTerm) || petition.body.lowercased().contains(searchTerm)
+                        }
                     }
                 }
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.tableView.reloadData()
+                }
             }
-            self?.tableView.reloadData()
         }
         
         ac.addAction(searchAction)
